@@ -41,7 +41,7 @@ def exit_handler():
 
 
 def get_profile_collection(api_key_, uuid_, profile_id_):
-    url = f"https://api.hypixel.net/skyblock/profile?key={api_key_}&profile={profile_id_}&uuid={uuid_}"
+    url = f"https://api.hypixel.net/v2/skyblock/profile?key={api_key_}&profile={profile_id_}&uuid={uuid_}"
     response = requests.get(url)
     return response.json()
 
@@ -53,7 +53,7 @@ def prepare_dirs():
 
 
 def get_collected_items():
-    url = f"https://api.hypixel.net/resources/skyblock/collections"
+    url = f"https://api.hypixel.net/v2/resources/skyblock/collections"
     response = requests.get(url)
     return response.json()
 
@@ -74,7 +74,7 @@ def prepare_collection_infos():
             os.path.getmtime(collection_info_path)) > datetime.datetime.now() - datetime.timedelta(days=1)):
         return read_from_json(collection_info_path)
     else:
-        url = "https://api.hypixel.net/resources/skyblock/collections"
+        url = "https://api.hypixel.net/v2/resources/skyblock/collections"
         response = requests.get(url)
         print("Got new collection_infos")
         save_to_json(collection_info_path, response.json())
@@ -97,7 +97,7 @@ def evaluate_changes(old: dict, new: dict, old_collections):
     collected = add_up_members(new)
     collected_old = add_up_members(old)
     collections = old_collections
-    print(old_collections)
+    #print(old_collections)
     for k in collected.keys():
         if k in collections.keys():
             collections[k]["collected"] = collected[k]
@@ -112,7 +112,7 @@ def evaluate_changes(old: dict, new: dict, old_collections):
             collections[k]["amount_changed"] = 0
         if "last_changed" not in collections[k].keys():
             collections[k]["last_changed"] = 0
-    print(collections)
+    #print(collections)
     return collections
 
 
@@ -234,7 +234,7 @@ def renew_coll(api_key, uuid, profile_id):
     sort = list(c.values())
     sort.sort(key=operator.itemgetter('last_changed'), reverse=True)
 
-    print(sort)
+    # print(sort)
 
     # save_to_json(os.path.join(CACHE_DIR, "exp.json"),sort)
 
@@ -261,10 +261,11 @@ class BackgroundThread(threading.Thread):
         global exit_event
         api_key, uuid, profile_id = start_up()
         while not exit_event.is_set():
+            # only request hypixel api when website is accessed
             if (datetime.datetime.now() - last_req).seconds < 10:
                 json_cache = renew_coll(api_key, uuid, profile_id)
                 image_cache = create_image.gen_list(json_cache["sorted"], 4)
-            exit_event.wait(5)
+            exit_event.wait(10)
 
 
 if __name__ == '__main__':
