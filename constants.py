@@ -1,10 +1,16 @@
 import json
 from PIL import Image
+from platformdirs import user_cache_dir, user_data_dir
+
+DEBUG = True
 
 APPNAME = "ben_skyblock_collection_stream"
 AUTHOR = "io.github.aws1313"
-CACHE_DIR = "/data/cache"
-DATA_DIR = "/data/data"
+
+
+CACHE_DIR = user_cache_dir(appname=APPNAME, appauthor=AUTHOR) if DEBUG else "/data/cache"
+
+DATA_DIR = user_data_dir(appname=APPNAME, appauthor=AUTHOR) if DEBUG else "/data/data"
 default_img = Image.new("RGBA", (750,150))
 
 
